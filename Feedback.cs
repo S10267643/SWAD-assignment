@@ -6,7 +6,19 @@ using System.Threading.Tasks;
 
 namespace SWAD_assignment
 {
-    internal class Feedback
+    public class Feedback
     {
+        public string Description { get; set; }
+        public int FeedbackId { get; set; }
+
+        public Feedback()
+        {
+        }
+
+        public Feedback(string description, int feedbackId)
+        {
+            Description = description;
+            FeedbackId = feedbackId;
+        }
     }
 }

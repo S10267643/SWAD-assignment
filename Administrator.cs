@@ -8,5 +8,16 @@ namespace SWAD_assignment
 {
     public class Administrator : User
     {
+        public int AdminId { get; set; }
+
+        public Administrator()
+        {
+        }
+
+        public Administrator(string password, string name, string email, int adminId)
+            : base(password, name, email)
+        {
+            AdminId = adminId;
+        }
     }
 }

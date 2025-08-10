@@ -8,5 +8,15 @@ namespace SWAD_assignment
 {
     public class FoodStallStaff : User
     {
+        public int StaffId { get; set; }
+
+        public FoodStallStaff()
+        {
+        }
+
+        public FoodStallStaff(int staffId)
+        {
+            StaffId = staffId;
+        }
     }
 }

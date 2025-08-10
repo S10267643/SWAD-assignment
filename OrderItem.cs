@@ -6,7 +6,19 @@ using System.Threading.Tasks;
 
 namespace SWAD_assignment
 {
-    internal class OrderItem
+    public class OrderItem
     {
+        public int ItemQuantity { get; set; }
+        public double Subtotal { get; set; }
+
+        public OrderItem()
+        {
+        }
+
+        public OrderItem(int itemQuantity, double subtotal)
+        {
+            ItemQuantity = itemQuantity;
+            Subtotal = subtotal;
+        }
     }
 }

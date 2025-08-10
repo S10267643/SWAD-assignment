@@ -6,7 +6,19 @@ using System.Threading.Tasks;
 
 namespace SWAD_assignment
 {
-    internal class Payment
+    public class Payment
     {
+        public int PaymentId { get; set; }
+        public string PaymentMethod { get; set; }
+
+        public Payment()
+        {
+        }
+
+        public Payment(int paymentId, string paymentMethod)
+        {
+            PaymentId = paymentId;
+            PaymentMethod = paymentMethod;
+        }
     }
 }
