@@ -19,6 +19,10 @@ namespace SWAD_assignment
         {
             SeedData();
             User loggedInUser = null;
+            Menu menu = new Menu();
+            menu.AddMenuItem(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+            menu.AddMenuItem(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+            menu.AddMenuItem(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
 
             while (true)
             {
@@ -31,7 +35,7 @@ namespace SWAD_assignment
                     switch (loggedInUser)
                     {
                         case Student student:
-                            ShowStudentMenu(student, ref loggedInUser);
+                            ShowStudentMenu(student, ref loggedInUser, menu);
                             break;
                         case FoodStallStaff staff:
                             ShowStaffMenu(staff, ref loggedInUser);
@@ -193,7 +197,7 @@ namespace SWAD_assignment
             Console.WriteLine("Account created successfully!");
         }
 
-        static void ShowStudentMenu(Student student, ref User loggedInUser)
+        static void ShowStudentMenu(Student student, ref User loggedInUser, Menu menu)
         {
             // Display priority status if applicable
             if (student is Priority priority)
@@ -207,9 +211,10 @@ namespace SWAD_assignment
                 Console.WriteLine("\n=== STUDENT MENU ===");
             }
 
-            Console.WriteLine("1. Send Feedback");
-            Console.WriteLine("2. View My Feedback");
-            Console.WriteLine("3. Logout");
+            Console.WriteLine("1. Place Order");
+            Console.WriteLine("2. Send Feedback");
+            Console.WriteLine("3. View My Feedback");
+            Console.WriteLine("4. Logout");
             Console.Write("Select option: ");
 
             var staffMembers = users.OfType<FoodStallStaff>().ToList();
@@ -217,12 +222,19 @@ namespace SWAD_assignment
             switch (Console.ReadLine())
             {
                 case "1":
-                    student.SendFeedback(staffMembers);
+                    FoodStall selectedStall = staffMembers[0].Stall;
+
+                    Cart cart = new Cart();
+
+                    student.PlaceOrder(menu, selectedStall, cart);
                     break;
                 case "2":
-                    Console.WriteLine("Feature coming soon!");
+                    student.SendFeedback(staffMembers);
                     break;
                 case "3":
+                    Console.WriteLine("Feature coming soon!");
+                    break;
+                case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
