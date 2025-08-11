@@ -8,17 +8,23 @@ namespace SWAD_assignment
 {
     public class OrderItem
     {
-        public int ItemQuantity { get; set; }
-        public double Subtotal { get; set; }
+        public int ItemId { get; set; }
+        public string ItemName { get; set; }
+        public double Price { get; set; }
+        public int Quantity { get; set; }
+        public double Subtotal => Price * Quantity;
 
-        public OrderItem()
+        public OrderItem(int itemId, string itemName, double price, int quantity)
         {
+            ItemId = itemId;
+            ItemName = itemName;
+            Price = price;
+            Quantity = quantity;
         }
 
-        public OrderItem(int itemQuantity, double subtotal)
+        public override string ToString()
         {
-            ItemQuantity = itemQuantity;
-            Subtotal = subtotal;
+            return $"{ItemName} x{Quantity} - ${Subtotal:F2}";
         }
     }
 }

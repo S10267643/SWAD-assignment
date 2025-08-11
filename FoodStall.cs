@@ -13,22 +13,12 @@ namespace SWAD_assignment
         public string Description { get; set; }
         public int OperatingHours { get; set; }
         public string Location { get; set; }
-        public List<Menu> Menus { get; set; }
+        public Menu Menu { get; set; }
 
         public FoodStall()
         {
-            Menus = new List<Menu>();
-        }
-
-        public FoodStall(int stallId, string stallName, string description,
-                         int operatingHours, string location)
-        {
-            StallId = stallId;
-            StallName = stallName;
-            Description = description;
-            OperatingHours = operatingHours;
-            Location = location;
-            Menus = new List<Menu>();
+            Menu = new Menu();
         }
     }
+
 }

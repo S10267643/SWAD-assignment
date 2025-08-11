@@ -9,23 +9,19 @@ namespace SWAD_assignment
     public class Order
     {
         public int OrderId { get; set; }
-        public string Status { get; set; }
+        public int StudentId { get; set; }
         public List<OrderItem> OrderItems { get; set; }
-        public double Total { get; set; }
+        public double Total => OrderItems.Sum(item => item.Subtotal);
         public DateTime OrderTime { get; set; }
+        public string Status { get; set; }
 
-        public Order()
-        {
-            OrderItems = new List<OrderItem>();
-        }
-
-        public Order(int orderId, string status, double total, DateTime orderTime)
+        public Order(int orderId, int studentId)
         {
             OrderId = orderId;
-            Status = status;
+            StudentId = studentId;
             OrderItems = new List<OrderItem>();
-            Total = total;
-            OrderTime = orderTime;
+            OrderTime = DateTime.Now;
+            Status = "Pending";
         }
     }
 }

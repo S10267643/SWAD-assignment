@@ -14,16 +14,20 @@ namespace SWAD_assignment
         public string ItemDescription { get; set; }
         public int Quantity { get; set; }
 
+        public MenuItem() { }
 
-
-        public MenuItem(int itemId, string itemName, double price,
-                        string itemDescription, int quantity)
+        public MenuItem(int itemId, string itemName, double price, string itemDescription, int quantity)
         {
             ItemId = itemId;
             ItemName = itemName;
             Price = price;
             ItemDescription = itemDescription;
             Quantity = quantity;
+        }
+
+        public override string ToString()
+        {
+            return $"ID: {ItemId} | {ItemName} - ${Price:F2} | {ItemDescription} | Stock: {Quantity}";
         }
     }
 }
