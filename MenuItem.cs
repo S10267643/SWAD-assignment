@@ -13,7 +13,8 @@ namespace SWAD_assignment
         public double Price { get; set; }
         public string ItemDescription { get; set; }
         public int Quantity { get; set; }
-
+        public bool IsAvailable { get; set; } = true;   
+        public int PrepDelayMinutes { get; set; } = 0;  
         public MenuItem() { }
 
         public MenuItem(int itemId, string itemName, double price, string itemDescription, int quantity)
@@ -29,5 +30,21 @@ namespace SWAD_assignment
         {
             return $"ID: {ItemId} | {ItemName} - ${Price:F2} | {ItemDescription} | Stock: {Quantity}";
         }
+
+        public bool ReduceStock(int amount)
+        {
+            if (Quantity >= amount)
+            {
+                Quantity -= amount;
+                return true;
+            }
+            return false; // Not enough stock
+        }
+
+        public void IncreaseStock(int amount)
+        {
+            Quantity += amount;
+        }
     }
 }
+

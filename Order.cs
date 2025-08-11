@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,20 +9,39 @@ namespace SWAD_assignment
 {
     public class Order
     {
+        private static int orderCounter = 1;
         public int OrderId { get; set; }
-        public int StudentId { get; set; }
-        public List<OrderItem> OrderItems { get; set; }
-        public double Total => OrderItems.Sum(item => item.Subtotal);
-        public DateTime OrderTime { get; set; }
-        public string Status { get; set; }
+        public List<(MenuItem Item, int Quantity)> Items { get; set; }
+        public double TotalPrice { get; set; }
+        public string QRCode { get; set; }
+        public Student OrderedBy { get; set; }
 
-        public Order(int orderId, int studentId)
+        public Order(List<(MenuItem Item, int Quantity)> items, double totalPrice, Student orderedBy)
         {
-            OrderId = orderId;
-            StudentId = studentId;
-            OrderItems = new List<OrderItem>();
-            OrderTime = DateTime.Now;
-            Status = "Pending";
+            OrderId = orderCounter++;
+            Items = items;
+            TotalPrice = totalPrice;
+            OrderedBy = orderedBy;
+        }
+
+        public void GenerateQRCode()
+        {
+            QRCode = $"QR-{OrderId}-{DateTime.Now.Ticks}";
+        }
+
+        public void NotifyStall(FoodStall stall)
+        {
+            stall.NotifyNewOrder(this);
+        }
+
+        public static Order PlaceOrder(Cart cart, FoodStall stall, Student student)
+        {
+            var order = new Order(cart.GetCartItems(), cart.CalculateTotalPrice(), student);
+            cart.EmptyCart();
+            order.GenerateQRCode();
+            order.NotifyStall(stall);
+            Console.WriteLine($"Order confirmed: {order.OrderId} | QR Code: {order.QRCode}");
+            return order;
         }
     }
 }

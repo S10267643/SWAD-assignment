@@ -1,3 +1,4 @@
+
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -376,6 +377,24 @@ namespace SWAD_assignment
                         break;
                 }
             }
+                  // Ensure stall has a menu and some starter items for viewing/updating
+        static void EnsureStallMenuSeeded(FoodStallStaff staff)
+        {
+            if (staff.Stall == null)
+                staff.Stall = new FoodStall { StallId = new Random().Next(100, 999), StallName = "New Stall" };
+
+            if (staff.Stall.Menu == null)
+                staff.Stall.Menu = new Menu();
+
+            var items = staff.Stall.Menu.MenuItems;
+            if (items.Count == 0)
+            {
+                items.Add(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+                items.Add(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+                items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
+            }
+        }
         }
     }
 }
+
