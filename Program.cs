@@ -19,6 +19,8 @@ namespace SWAD_assignment
         {
             SeedData();
             User loggedInUser = null;
+
+ 
             Menu menu = new Menu();
             menu.AddMenuItem(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
             menu.AddMenuItem(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
@@ -43,7 +45,6 @@ namespace SWAD_assignment
                         case Administrator admin:
                             ShowAdminMenu(admin, ref loggedInUser);
                             break;
-                       
                     }
                 }
             }
@@ -154,9 +155,9 @@ namespace SWAD_assignment
 
             switch (type)
             {
-                case "1": // Student
+                case "1":
                     Console.Write("Is this a priority student? (y/n): ");
-                    if (Console.ReadLine().ToLower() == "y")
+                    if ((Console.ReadLine() ?? "").Trim().ToLower() == "y")
                     {
                         Console.Write("Enter priority type (e.g., 'Athlete', 'Disability'): ");
                         string priorityType = Console.ReadLine();
@@ -177,7 +178,8 @@ namespace SWAD_assignment
                         users.Add(new Student(userCounter++, name, email, password));
                     }
                     break;
-                case "2": // Staff
+
+                case "2":
                     var staff = new FoodStallStaff(userCounter++, name, email, password);
                     staff.Stall = new FoodStall
                     {
@@ -189,6 +191,7 @@ namespace SWAD_assignment
                     users.Add(staff);
                     Console.WriteLine("Staff account created!");
                     break;
+
                 default:
                     Console.WriteLine("Invalid account type.");
                     return;
@@ -199,7 +202,6 @@ namespace SWAD_assignment
 
         static void ShowStudentMenu(Student student, ref User loggedInUser, Menu menu)
         {
-            // Display priority status if applicable
             if (student is Priority priority)
             {
                 Console.WriteLine($"\n=== PRIORITY STUDENT MENU ({priority.PriorityType}) ===");
@@ -222,22 +224,32 @@ namespace SWAD_assignment
             switch (Console.ReadLine())
             {
                 case "1":
+                    if (staffMembers.Count == 0)
+                    {
+                        Console.WriteLine("No stalls available yet.");
+                        break;
+                    }
                     FoodStall selectedStall = staffMembers[0].Stall;
 
                     Cart cart = new Cart(student);
 
+  
                     student.PlaceOrder(menu, selectedStall, cart);
                     break;
+
                 case "2":
                     student.SendFeedback(staffMembers);
                     break;
+
                 case "3":
                     Console.WriteLine("Feature coming soon!");
                     break;
+
                 case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
@@ -250,8 +262,9 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. View Incoming Orders");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("3. View Menu");
+            Console.WriteLine("4. Update Menu");
+            Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -269,70 +282,26 @@ namespace SWAD_assignment
                         Console.WriteLine($"- {priorityTag}{fb.Description} (from {fb.FromStudent.Name})");
                     }
                     break;
+
                 case "2":
                     staff.ReportFeedback(reports);
                     break;
+
                 case "3":
-                    if (staff.Stall.Orders.Count == 0)
-                    {
-                        Console.WriteLine("No incoming orders at the moment.");
-                        break;
-                    }
-
-                    // Step 1: List all order IDs
-                    Console.WriteLine("\n=== Order IDs ===");
-                    foreach (var order in staff.Stall.Orders)
-                    {
-                        Console.WriteLine($"Order ID: {order.OrderId}");
-                        Console.WriteLine($"Customer: {order.OrderedBy.Name}");
-                        if (order.OrderedBy is Priority)
-                        {
-                            Console.WriteLine("[PRIORITY ORDER]");
-                        }
-                        Console.WriteLine("-------------------");
-                    }
-
-                    // Step 2: Select an order to view details
-                    Console.Write("\nEnter Order ID to view details (or 0 to cancel): ");
-                    if (!int.TryParse(Console.ReadLine(), out int selectedOrderId) || selectedOrderId == 0)
-                    {
-                        break;
-                    }
-
-                    var orderToManage = staff.Stall.Orders.FirstOrDefault(o => o.OrderId == selectedOrderId);
-                    if (orderToManage == null)
-                    {
-                        Console.WriteLine("Order not found.");
-                        break;
-                    }
-
-                    // Display full order details
-                    Console.WriteLine("\n=== Order Details ===");
-                    Console.WriteLine($"Order ID: {orderToManage.OrderId}");
-                    Console.WriteLine($"Customer: {orderToManage.OrderedBy.Name}");
-                    Console.WriteLine($"QR Code: {orderToManage.QRCode}");
-                    Console.WriteLine("Items:");
-                    foreach (var item in orderToManage.Items)
-                    {
-                        Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
-                    }
-                    Console.WriteLine($"Total: {orderToManage.TotalPrice:C}");
-
-                    // Step 3: Prompt for cancellation
-                    Console.Write("\nWould you like to cancel this order? (Y/N): ");
-                    string cancelChoice = Console.ReadLine()?.Trim().ToUpper();
-
-                    if (cancelChoice == "Y")
-                    {
-                        staff.Stall.CancelOrder(selectedOrderId);
-                    }
+                    EnsureStallMenuSeeded(staff);
+                    ViewMenu.Show(staff);
                     break;
-            
-           
+
                 case "4":
+                    EnsureStallMenuSeeded(staff);
+                    UpdateMenu.Show(staff);
+                    break;
+
+                case "0":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
@@ -353,6 +322,7 @@ namespace SWAD_assignment
                 case "1":
                     admin.HandleReports(reports, users);
                     break;
+
                 case "2":
                     Console.WriteLine("\nAll Users:");
                     foreach (var user in users)
@@ -365,13 +335,16 @@ namespace SWAD_assignment
                         Console.WriteLine($"- {user.Name} ({user.Email}) - {userType}");
                     }
                     break;
+
                 case "3":
                     ManagePriorityStudents();
                     break;
+
                 case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
@@ -420,6 +393,7 @@ namespace SWAD_assignment
                             Console.WriteLine("Invalid date format.");
                         }
                         break;
+
                     case "2":
                         Console.Write("Enter new order limit: ");
                         if (int.TryParse(Console.ReadLine(), out int newLimit) && newLimit > 0)
@@ -432,6 +406,7 @@ namespace SWAD_assignment
                             Console.WriteLine("Invalid limit.");
                         }
                         break;
+
                     case "3":
                         Console.Write("Enter new time slot (0 = highest priority): ");
                         if (int.TryParse(Console.ReadLine(), out int newSlot) && newSlot >= 0)
@@ -444,10 +419,29 @@ namespace SWAD_assignment
                             Console.WriteLine("Invalid time slot.");
                         }
                         break;
+
                     default:
                         Console.WriteLine("Invalid action.");
                         break;
                 }
+            }
+        }
+
+        // Ensure stall has a menu and some starter items for viewing/updating
+        static void EnsureStallMenuSeeded(FoodStallStaff staff)
+        {
+            if (staff.Stall == null)
+                staff.Stall = new FoodStall { StallId = new Random().Next(100, 999), StallName = "New Stall" };
+
+            if (staff.Stall.Menu == null)
+                staff.Stall.Menu = new Menu();
+
+            var items = staff.Stall.Menu.MenuItems;
+            if (items.Count == 0)
+            {
+                items.Add(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+                items.Add(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+                items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
             }
         }
     }
