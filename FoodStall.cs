@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SWAD_assignment
 {
@@ -19,6 +20,10 @@ namespace SWAD_assignment
         {
             Menu = new Menu();
         }
-    }
 
+        public void NotifyNewOrder(Order order)
+        {
+            Console.WriteLine($"New order received at {StallName}: #{order.OrderId}");
+        }
+    }
 }

@@ -29,5 +29,20 @@ namespace SWAD_assignment
         {
             return $"ID: {ItemId} | {ItemName} - ${Price:F2} | {ItemDescription} | Stock: {Quantity}";
         }
+
+        public bool ReduceStock(int amount)
+        {
+            if (Quantity >= amount)
+            {
+                Quantity -= amount;
+                return true;
+            }
+            return false; // Not enough stock
+        }
+
+        public void IncreaseStock(int amount)
+        {
+            Quantity += amount;
+        }
     }
 }
