@@ -43,7 +43,7 @@ namespace SWAD_assignment
                         case Administrator admin:
                             ShowAdminMenu(admin, ref loggedInUser);
                             break;
-                       
+
                     }
                 }
             }
@@ -224,7 +224,7 @@ namespace SWAD_assignment
                 case "1":
                     FoodStall selectedStall = staffMembers[0].Stall;
 
-                    Cart cart = new Cart(student);
+                    Cart cart = new Cart();
 
                     student.PlaceOrder(menu, selectedStall, cart);
                     break;
@@ -250,8 +250,9 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. View Incoming Orders");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("3. View Menu");    // NEW
+            Console.WriteLine("4. Update Menu");  // NEW
+            Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -269,75 +270,32 @@ namespace SWAD_assignment
                         Console.WriteLine($"- {priorityTag}{fb.Description} (from {fb.FromStudent.Name})");
                     }
                     break;
+
                 case "2":
                     staff.ReportFeedback(reports);
                     break;
+
                 case "3":
-                    if (staff.Stall.Orders.Count == 0)
-                    {
-                        Console.WriteLine("No incoming orders at the moment.");
-                        break;
-                    }
-
-                    // Step 1: List all order IDs
-                    Console.WriteLine("\n=== Order IDs ===");
-                    foreach (var order in staff.Stall.Orders)
-                    {
-                        Console.WriteLine($"Order ID: {order.OrderId}");
-                        Console.WriteLine($"Customer: {order.OrderedBy.Name}");
-                        if (order.OrderedBy is Priority)
-                        {
-                            Console.WriteLine("[PRIORITY ORDER]");
-                        }
-                        Console.WriteLine("-------------------");
-                    }
-
-                    // Step 2: Select an order to view details
-                    Console.Write("\nEnter Order ID to view details (or 0 to cancel): ");
-                    if (!int.TryParse(Console.ReadLine(), out int selectedOrderId) || selectedOrderId == 0)
-                    {
-                        break;
-                    }
-
-                    var orderToManage = staff.Stall.Orders.FirstOrDefault(o => o.OrderId == selectedOrderId);
-                    if (orderToManage == null)
-                    {
-                        Console.WriteLine("Order not found.");
-                        break;
-                    }
-
-                    // Display full order details
-                    Console.WriteLine("\n=== Order Details ===");
-                    Console.WriteLine($"Order ID: {orderToManage.OrderId}");
-                    Console.WriteLine($"Customer: {orderToManage.OrderedBy.Name}");
-                    Console.WriteLine($"QR Code: {orderToManage.QRCode}");
-                    Console.WriteLine("Items:");
-                    foreach (var item in orderToManage.Items)
-                    {
-                        Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
-                    }
-                    Console.WriteLine($"Total: {orderToManage.TotalPrice:C}");
-
-                    // Step 3: Prompt for cancellation
-                    Console.Write("\nWould you like to cancel this order? (Y/N): ");
-                    string cancelChoice = Console.ReadLine()?.Trim().ToUpper();
-
-                    if (cancelChoice == "Y")
-                    {
-                        staff.Stall.CancelOrder(selectedOrderId);
-                    }
+                    EnsureStallMenuSeeded(staff);  // ensure there are items to view
+                    ViewMenu.Show(staff);
                     break;
-            
-           
+
                 case "4":
+                    EnsureStallMenuSeeded(staff);  // ensure there are items to edit
+                    UpdateMenu.Show(staff);
+                    break;
+
+                case "0":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
             }
         }
+
 
         static void ShowAdminMenu(Administrator admin, ref User loggedInUser)
         {
