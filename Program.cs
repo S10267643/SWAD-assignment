@@ -61,10 +61,16 @@ namespace SWAD_assignment
             // Staff
             var staff1 = new FoodStallStaff(userCounter++, "Mike Johnson", "mike@staff.edu", "staff123");
             staff1.Stall = new FoodStall { StallId = 1, StallName = "Burger King" };
+
+            staff1.Stall.Menu.MenuItems.Add(new MenuItem(1, "Cheeseburger", 4.50, "Beef patty, cheese", 20));
+            staff1.Stall.Menu.MenuItems.Add(new MenuItem(2, "Fries", 2.00, "Shoestring fries", 50));
             users.Add(staff1);
 
             var staff2 = new FoodStallStaff(userCounter++, "Sarah Williams", "sarah@staff.edu", "staff123");
             staff2.Stall = new FoodStall { StallId = 2, StallName = "Pizza Hut" };
+
+            staff2.Stall.Menu.MenuItems.Add(new MenuItem(3, "Margherita Pizza", 8.90, "Tomato, mozzarella, basil", 12));
+            staff2.Stall.Menu.MenuItems.Add(new MenuItem(4, "Pepperoni Pizza", 9.90, "Classic pepperoni", 10));
             users.Add(staff2);
         }
 
@@ -238,7 +244,9 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. Logout");
+            Console.WriteLine("3. View Menu");
+            Console.WriteLine("4. Update Menu");
+            Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -256,13 +264,24 @@ namespace SWAD_assignment
                         Console.WriteLine($"- {priorityTag}{fb.Description} (from {fb.FromStudent.Name})");
                     }
                     break;
+
                 case "2":
                     staff.ReportFeedback(reports);
                     break;
+
                 case "3":
+                    ViewMenu.Show(staff);   // works with your ViewMenu.cs
+                    break;
+
+                case "4":
+                    UpdateMenu.Show(staff); // will work once we add UpdateMenu.cs next
+                    break;
+
+                case "0":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
