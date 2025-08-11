@@ -9,6 +9,12 @@ namespace SWAD_assignment
     public class Cart
     {
         private Dictionary<int, (MenuItem Item, int Quantity)> cartItems = new Dictionary<int, (MenuItem, int)>();
+        public Student Owner { get; set; }
+
+        public Cart(Student owner)
+        {
+            Owner = owner;
+        }
 
         public void AddToCart(MenuItem item, int quantity)
         {

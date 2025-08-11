@@ -70,5 +70,39 @@ namespace SWAD_assignment
             reports.Add(report);
             Console.WriteLine("Feedback reported successfully!");
         }
+
+        public void ViewIncomingOrders()
+        {
+            Stall.DisplayAllOrders();
+        }
+
+        public void CancelOrder()
+        {
+            if (Stall.Orders.Count == 0)
+            {
+                Console.WriteLine("No orders to cancel.");
+                return;
+            }
+
+            Stall.DisplayAllOrders();
+            Console.Write("\nEnter Order ID to cancel: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int orderId))
+            {
+                Console.WriteLine("Invalid order ID.");
+                return;
+            }
+
+            Console.Write($"Are you sure you want to cancel Order #{orderId}? (Y/N): ");
+            if (Console.ReadLine().Trim().ToUpper() == "Y")
+            {
+                Stall.CancelOrder(orderId);
+            }
+            else
+            {
+                Console.WriteLine("Cancellation cancelled.");
+            }
+        }
+
     }
 }

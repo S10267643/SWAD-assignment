@@ -224,7 +224,7 @@ namespace SWAD_assignment
                 case "1":
                     FoodStall selectedStall = staffMembers[0].Stall;
 
-                    Cart cart = new Cart();
+                    Cart cart = new Cart(student);
 
                     student.PlaceOrder(menu, selectedStall, cart);
                     break;
@@ -273,18 +273,62 @@ namespace SWAD_assignment
                     staff.ReportFeedback(reports);
                     break;
                 case "3":
-                    if (staff.ReceivedFeedback.Count == 0)
+                    if (staff.Stall.Orders.Count == 0)
                     {
-                        Console.WriteLine("No Incoming Orders at the moment.");
+                        Console.WriteLine("No incoming orders at the moment.");
                         break;
                     }
-                    Console.WriteLine("\nIncoming Orders:");
-                    foreach (var order in staff.ReceivedFeedback)
+
+                    // Step 1: List all order IDs
+                    Console.WriteLine("\n=== Order IDs ===");
+                    foreach (var order in staff.Stall.Orders)
                     {
-                        string priorityTag = order.FromStudent is Priority ? "[PRIORITY] " : "";
-                        Console.WriteLine($"- {priorityTag}{order.Description} (from {order.FromStudent.Name})");
+                        Console.WriteLine($"Order ID: {order.OrderId}");
+                        Console.WriteLine($"Customer: {order.OrderedBy.Name}");
+                        if (order.OrderedBy is Priority)
+                        {
+                            Console.WriteLine("[PRIORITY ORDER]");
+                        }
+                        Console.WriteLine("-------------------");
+                    }
+
+                    // Step 2: Select an order to view details
+                    Console.Write("\nEnter Order ID to view details (or 0 to cancel): ");
+                    if (!int.TryParse(Console.ReadLine(), out int selectedOrderId) || selectedOrderId == 0)
+                    {
+                        break;
+                    }
+
+                    var orderToManage = staff.Stall.Orders.FirstOrDefault(o => o.OrderId == selectedOrderId);
+                    if (orderToManage == null)
+                    {
+                        Console.WriteLine("Order not found.");
+                        break;
+                    }
+
+                    // Display full order details
+                    Console.WriteLine("\n=== Order Details ===");
+                    Console.WriteLine($"Order ID: {orderToManage.OrderId}");
+                    Console.WriteLine($"Customer: {orderToManage.OrderedBy.Name}");
+                    Console.WriteLine($"QR Code: {orderToManage.QRCode}");
+                    Console.WriteLine("Items:");
+                    foreach (var item in orderToManage.Items)
+                    {
+                        Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
+                    }
+                    Console.WriteLine($"Total: {orderToManage.TotalPrice:C}");
+
+                    // Step 3: Prompt for cancellation
+                    Console.Write("\nWould you like to cancel this order? (Y/N): ");
+                    string cancelChoice = Console.ReadLine()?.Trim().ToUpper();
+
+                    if (cancelChoice == "Y")
+                    {
+                        staff.Stall.CancelOrder(selectedOrderId);
                     }
                     break;
+            
+           
                 case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");

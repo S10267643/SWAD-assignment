@@ -14,12 +14,14 @@ namespace SWAD_assignment
         public List<(MenuItem Item, int Quantity)> Items { get; set; }
         public double TotalPrice { get; set; }
         public string QRCode { get; set; }
+        public Student OrderedBy { get; set; }
 
-        public Order(List<(MenuItem Item, int Quantity)> items, double totalPrice)
+        public Order(List<(MenuItem Item, int Quantity)> items, double totalPrice, Student orderedBy)
         {
             OrderId = orderCounter++;
             Items = items;
             TotalPrice = totalPrice;
+            OrderedBy = orderedBy;
         }
 
         public void GenerateQRCode()
@@ -32,9 +34,9 @@ namespace SWAD_assignment
             stall.NotifyNewOrder(this);
         }
 
-        public static Order PlaceOrder(Cart cart, FoodStall stall)
+        public static Order PlaceOrder(Cart cart, FoodStall stall, Student student)
         {
-            var order = new Order(cart.GetCartItems(), cart.CalculateTotalPrice());
+            var order = new Order(cart.GetCartItems(), cart.CalculateTotalPrice(), student);
             cart.EmptyCart();
             order.GenerateQRCode();
             order.NotifyStall(stall);

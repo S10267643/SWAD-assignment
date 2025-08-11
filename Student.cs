@@ -203,7 +203,7 @@
             if (confirm == "Y")
             {
                 // Proceed with order: stock was already reduced, so just place order
-                Order.PlaceOrder(cart, stall);
+                Order.PlaceOrder(cart, stall, this);
                 OrderLimit--;
             }
             else
