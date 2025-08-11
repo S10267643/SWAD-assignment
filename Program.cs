@@ -238,7 +238,8 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. Logout");
+            Console.WriteLine("3. View Incoming Orders");
+            Console.WriteLine("4. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -260,6 +261,19 @@ namespace SWAD_assignment
                     staff.ReportFeedback(reports);
                     break;
                 case "3":
+                    if (staff.ReceivedFeedback.Count == 0)
+                    {
+                        Console.WriteLine("No Incoming Orders at the moment.");
+                        break;
+                    }
+                    Console.WriteLine("\nIncoming Orders:");
+                    foreach (var order in staff.ReceivedFeedback)
+                    {
+                        string priorityTag = order.FromStudent is Priority ? "[PRIORITY] " : "";
+                        Console.WriteLine($"- {priorityTag}{order.Description} (from {order.FromStudent.Name})");
+                    }
+                    break;
+                case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
