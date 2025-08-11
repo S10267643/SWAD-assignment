@@ -11,9 +11,10 @@
              : base(userId, name, email, password)
         {
             StudentId = userId;
+            StudentId = userId;
             SuspensionStatus = false;
-            OrderLimit = 5;          // Default order limit
-            PickUpTimeSlot = 1;
+            OrderLimit = 3;          // Default order limit
+            PickUpTimeSlot = 15;
         }
         public void SendFeedback(List<FoodStallStaff> stalls)
         {
