@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SWAD_assignment
 {
-    public class OrderItem
+    public class CartItem
     {
         public int ItemId { get; set; }
         public string ItemName { get; set; }
@@ -14,7 +14,7 @@ namespace SWAD_assignment
         public int Quantity { get; set; }
         public double Subtotal => Price * Quantity;
 
-        public OrderItem(int itemId, string itemName, double price, int quantity)
+        public CartItem(int itemId, string itemName, double price, int quantity)
         {
             ItemId = itemId;
             ItemName = itemName;
