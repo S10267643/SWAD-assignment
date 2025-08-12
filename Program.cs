@@ -1,3 +1,4 @@
+
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +20,6 @@ namespace SWAD_assignment
         {
             SeedData();
             User loggedInUser = null;
-            Menu menu = new Menu();
-            menu.AddMenuItem(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
-            menu.AddMenuItem(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
-            menu.AddMenuItem(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
 
             while (true)
             {
@@ -35,7 +32,7 @@ namespace SWAD_assignment
                     switch (loggedInUser)
                     {
                         case Student student:
-                            ShowStudentMenu(student, ref loggedInUser, menu);
+                            ShowStudentMenu(student, ref loggedInUser);
                             break;
                         case FoodStallStaff staff:
                             ShowStaffMenu(staff, ref loggedInUser);
@@ -43,7 +40,7 @@ namespace SWAD_assignment
                         case Administrator admin:
                             ShowAdminMenu(admin, ref loggedInUser);
                             break;
-                       
+
                     }
                 }
             }
@@ -59,8 +56,7 @@ namespace SWAD_assignment
             users.Add(new Student(userCounter++, "Jane Smith", "jane@student.edu", "student123"));
 
             // Priority Student
-            users.Add(new Priority(userCounter++, "Alice Johnson", "alice@student.edu", "student123",
-                "Athlete", DateTime.Now.AddMonths(6)));
+            users.Add(new Priority(userCounter++, "Alice Johnson", "alice@student.edu", "student123"));
 
             // Staff
             var staff1 = new FoodStallStaff(userCounter++, "Mike Johnson", "mike@staff.edu", "staff123");
@@ -116,7 +112,7 @@ namespace SWAD_assignment
                 Console.WriteLine($"\nWelcome, {user.Name}!");
                 if (user is Priority priority)
                 {
-                    Console.WriteLine($"Priority Status: {(priority.IsPriorityActive() ? "Active" : "Expired")}");
+                    Console.WriteLine($"Priority");
                 }
                 return user;
             }
@@ -158,25 +154,16 @@ namespace SWAD_assignment
                     Console.Write("Is this a priority student? (y/n): ");
                     if (Console.ReadLine().ToLower() == "y")
                     {
-                        Console.Write("Enter priority type (e.g., 'Athlete', 'Disability'): ");
-                        string priorityType = Console.ReadLine();
-                        Console.Write("Enter expiry date (yyyy-mm-dd): ");
-                        if (DateTime.TryParse(Console.ReadLine(), out DateTime expiry))
-                        {
-                            users.Add(new Priority(userCounter++, name, email, password, priorityType, expiry));
-                            Console.WriteLine("Priority student account created!");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid date format. Creating regular student account.");
-                            users.Add(new Student(userCounter++, name, email, password));
-                        }
+                        users.Add(new Priority(userCounter++, name, email, password));
+                        Console.WriteLine("Priority student account created!");
                     }
                     else
                     {
                         users.Add(new Student(userCounter++, name, email, password));
                     }
                     break;
+                 
+                   
                 case "2": // Staff
                     var staff = new FoodStallStaff(userCounter++, name, email, password);
                     staff.Stall = new FoodStall
@@ -197,26 +184,25 @@ namespace SWAD_assignment
             Console.WriteLine("Account created successfully!");
         }
 
-        static void ShowStudentMenu(Student student, ref User loggedInUser, Menu menu)
+        static void ShowStudentMenu(Student student, ref User loggedInUser)
         {
             // Show notifications first
             student.CheckNotifications();
             // Display priority status if applicable
             if (student is Priority priority)
             {
-                Console.WriteLine($"\n=== PRIORITY STUDENT MENU ({priority.PriorityType}) ===");
+                Console.WriteLine($"\n=== PRIORITY STUDENT MENU ({priority.Name}) ===");
                 Console.WriteLine($"Your benefits: Order Limit: {priority.OrderLimit}, Time Slot: {priority.PickUpTimeSlot}");
-                Console.WriteLine($"Priority status: {(priority.IsPriorityActive() ? "ACTIVE" : "EXPIRED")}");
+
             }
             else
             {
                 Console.WriteLine("\n=== STUDENT MENU ===");
             }
 
-            Console.WriteLine("1. Place Order");
-            Console.WriteLine("2. Send Feedback");
-            Console.WriteLine("3. View My Feedback");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("1. Send Feedback");
+            Console.WriteLine("2. View My Feedback");
+            Console.WriteLine("3. Logout");
             Console.Write("Select option: ");
 
             var staffMembers = users.OfType<FoodStallStaff>().ToList();
@@ -224,19 +210,12 @@ namespace SWAD_assignment
             switch (Console.ReadLine())
             {
                 case "1":
-                    FoodStall selectedStall = staffMembers[0].Stall;
-
-                    Cart cart = new Cart(student);
-
-                    student.PlaceOrder(menu, selectedStall, cart);
-                    break;
-                case "2":
                     student.SendFeedback(staffMembers);
                     break;
-                case "3":
+                case "2":
                     Console.WriteLine("Feature coming soon!");
                     break;
-                case "4":
+                case "3":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
@@ -252,8 +231,7 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. View Incoming Orders");
-            Console.WriteLine("4. Logout");
+            Console.WriteLine("3. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -332,114 +310,139 @@ namespace SWAD_assignment
 
         static void ShowAdminMenu(Administrator admin, ref User loggedInUser)
         {
-            Console.WriteLine("\n=== Admin Menu ===");
-            Console.WriteLine("1. Handle Reports");
-            Console.WriteLine("2. View All Users");
-            Console.WriteLine("3. Manage Priority Students");
-            Console.WriteLine("4. Logout");
-            Console.Write("Select option: ");
-
-            switch (Console.ReadLine())
+            while (true)
             {
-                case "1":
-                    admin.HandleReports(reports, users);
-                    break;
-                case "2":
-                    Console.WriteLine("\nAll Users:");
-                    foreach (var user in users)
-                    {
-                        string userType = user.GetType().Name;
-                        if (user is Priority p)
-                        {
-                            userType += $" ({p.PriorityType}, Active: {p.IsPriorityActive()})";
-                        }
-                        Console.WriteLine($"- {user.Name} ({user.Email}) - {userType}");
-                    }
-                    break;
-                case "3":
-                    ManagePriorityStudents();
-                    break;
-                case "4":
-                    loggedInUser = null;
-                    Console.WriteLine("Logged out successfully.");
-                    break;
-                default:
-                    Console.WriteLine("Invalid option.");
-                    break;
-            }
-        }
+                Console.WriteLine("\n=== ADMIN MENU ===");
+                Console.WriteLine("1. Handle Reports");
+                Console.WriteLine("2. View All Users");
+                Console.WriteLine("3. Delete User");
+                Console.WriteLine("4. Suspend Student");
+                Console.WriteLine("5. Reinstate Student");
+                Console.WriteLine("6. Logout");
+                Console.Write("Select option: ");
 
-        static void ManagePriorityStudents()
-        {
-            var priorityStudents = users.OfType<Priority>().ToList();
-            if (priorityStudents.Count == 0)
-            {
-                Console.WriteLine("No priority students found.");
-                return;
-            }
-
-            Console.WriteLine("\n=== Priority Students ===");
-            for (int i = 0; i < priorityStudents.Count; i++)
-            {
-                var ps = priorityStudents[i];
-                Console.WriteLine($"{i + 1}. {ps.Name} - Type: {ps.PriorityType}, " +
-                    $"Expires: {ps.PriorityExpiry:d}, Active: {ps.IsPriorityActive()}");
-            }
-
-            Console.Write("\nSelect student to modify (0 to cancel): ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice > 0 && choice <= priorityStudents.Count)
-            {
-                var student = priorityStudents[choice - 1];
-                Console.WriteLine($"\nEditing: {student.Name}");
-                Console.WriteLine($"Current Type: {student.PriorityType}");
-                Console.WriteLine($"Current Expiry: {student.PriorityExpiry:d}");
-                Console.WriteLine($"Current Order Limit: {student.OrderLimit}");
-                Console.WriteLine($"Current Time Slot: {student.PickUpTimeSlot}");
-
-                Console.Write("\n1. Extend expiry\n2. Change order limit\n3. Change time slot\nSelect action: ");
                 switch (Console.ReadLine())
                 {
-                    case "1":
-                        Console.Write("Enter new expiry date (yyyy-mm-dd): ");
-                        if (DateTime.TryParse(Console.ReadLine(), out DateTime newExpiry))
+                    case "1": // Handle Reports
+                        admin.HandleReports(reports, users);
+                        break;
+
+                    case "2": // View All Users
+                        admin.DisplayAllUsers(users);
+                        break;
+
+                    case "3": // Delete User
+                        Console.Write("Enter User ID to delete: ");
+                        if (int.TryParse(Console.ReadLine(), out int deleteId))
                         {
-                            student.PriorityExpiry = newExpiry;
-                            Console.WriteLine("Expiry date updated.");
+                            admin.DeleteUser(deleteId, users);
                         }
                         else
                         {
-                            Console.WriteLine("Invalid date format.");
+                            Console.WriteLine("Invalid User ID.");
                         }
                         break;
-                    case "2":
-                        Console.Write("Enter new order limit: ");
-                        if (int.TryParse(Console.ReadLine(), out int newLimit) && newLimit > 0)
+
+                    case "4": // Suspend Student
+                        Console.Write("Enter Student ID to suspend: ");
+                        if (int.TryParse(Console.ReadLine(), out int suspendId))
                         {
-                            student.OrderLimit = newLimit;
-                            Console.WriteLine("Order limit updated.");
+                            admin.SuspendStudent(suspendId, users);
                         }
                         else
                         {
-                            Console.WriteLine("Invalid limit.");
+                            Console.WriteLine("Invalid Student ID.");
                         }
                         break;
-                    case "3":
-                        Console.Write("Enter new time slot (0 = highest priority): ");
-                        if (int.TryParse(Console.ReadLine(), out int newSlot) && newSlot >= 0)
+
+                    case "5": // Reinstate Student
+                        Console.Write("Enter Student ID to reinstate: ");
+                        if (int.TryParse(Console.ReadLine(), out int reinstateId))
                         {
-                            student.PickUpTimeSlot = newSlot;
-                            Console.WriteLine("Time slot updated.");
+                            admin.ReinstateStudent(reinstateId, users);
                         }
                         else
                         {
-                            Console.WriteLine("Invalid time slot.");
+                            Console.WriteLine("Invalid Student ID.");
                         }
                         break;
+
+                    case "6": // Logout
+                        loggedInUser = null;
+                        Console.WriteLine("Logged out successfully.");
+                        return;
+
                     default:
-                        Console.WriteLine("Invalid action.");
+                        Console.WriteLine("Invalid option.");
                         break;
                 }
             }
+
+
+            static void HandleUserManagement(Administrator admin)
+            {
+                Console.WriteLine("\n=== USER MANAGEMENT ===");
+                Console.WriteLine("All Users:");
+
+                foreach (var user in users)
+                {
+                    string status = "";
+                    if (user is Student s) status = s.SuspensionStatus ? " [SUSPENDED]" : " [ACTIVE]";
+                    Console.WriteLine($"{user.UserId}: {user.Name} ({user.Email}) - {user.GetType().Name}{status}");
+                }
+
+                Console.WriteLine("\n1. Delete User");
+                Console.WriteLine("2. Suspend Student");
+                Console.WriteLine("3. Reinstate Student");
+                Console.WriteLine("4. Back to Menu");
+                Console.Write("Select action: ");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+                        Console.Write("Enter User ID to delete: ");
+                        if (int.TryParse(Console.ReadLine(), out int deleteId))
+                        {
+                            bool success = admin.DeleteUser(deleteId, users);
+                            Console.WriteLine(success ? "User deleted." : "Deletion failed.");
+                        }
+                        break;
+                    case "2":
+                        Console.Write("Enter Student ID to suspend: ");
+                        if (int.TryParse(Console.ReadLine(), out int suspendId))
+                        {
+                            bool success = admin.SuspendStudent(suspendId, users);
+                            Console.WriteLine(success ? "Student suspended." : "Suspension failed.");
+                        }
+                        break;
+                    case "3":
+                        Console.Write("Enter Student ID to reinstate: ");
+                        if (int.TryParse(Console.ReadLine(), out int reinstateId))
+                        {
+                            bool success = admin.ReinstateStudent(reinstateId, users);
+                            Console.WriteLine(success ? "Student reinstated." : "Reinstatement failed.");
+                        }
+                        break;
+                }
+            }
+                  // Ensure stall has a menu and some starter items for viewing/updating
+        static void EnsureStallMenuSeeded(FoodStallStaff staff)
+        {
+            if (staff.Stall == null)
+                staff.Stall = new FoodStall { StallId = new Random().Next(100, 999), StallName = "New Stall" };
+
+            if (staff.Stall.Menu == null)
+                staff.Stall.Menu = new Menu();
+
+            var items = staff.Stall.Menu.MenuItems;
+            if (items.Count == 0)
+            {
+                items.Add(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+                items.Add(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+                items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
+            }
+        }
         }
     }
 }
+

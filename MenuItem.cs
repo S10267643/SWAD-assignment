@@ -13,7 +13,8 @@ namespace SWAD_assignment
         public double Price { get; set; }
         public string ItemDescription { get; set; }
         public int Quantity { get; set; }
-
+        public bool IsAvailable { get; set; } = true;   
+        public int PrepDelayMinutes { get; set; } = 0;  
         public MenuItem() { }
 
         public MenuItem(int itemId, string itemName, double price, string itemDescription, int quantity)
@@ -46,3 +47,4 @@ namespace SWAD_assignment
         }
     }
 }
+
