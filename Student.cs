@@ -203,6 +203,19 @@
             string confirm = Console.ReadLine()?.Trim().ToUpper();
             if (confirm == "Y")
             {
+                stall.DisplayTimeSlots();
+                Console.Write("Please select a time slot by ID: ");
+                if (!int.TryParse(Console.ReadLine(), out int slotId))
+                {
+                    Console.WriteLine("Invalid slot selection.");
+                    return;
+                }
+
+                if (stall.BookTimeSlot(slotId))
+                {
+                    Order.PlaceOrder(cart, stall, this);
+                    OrderLimit--;
+                }
                 // Proceed with order: stock was already reduced, so just place order
                 Order.PlaceOrder(cart, stall, this);
                 OrderLimit--;
@@ -215,6 +228,67 @@
                     ci.Item.IncreaseStock(ci.Quantity);
                 }
                 Console.WriteLine("Order cancelled.");
+            }
+        }
+        public void LastMinuteSlot(FoodStall stall)
+        {
+            Console.WriteLine("\n⚠️  A last minute change will result in a $2 fee. Proceed? (Y/N)");
+            string confirm = Console.ReadLine()?.Trim().ToUpper();
+
+            if (confirm != "Y")
+            {
+                Console.WriteLine("Understood. Returning to dashboard.");
+                return;
+            }
+
+            // Display available time slots
+            stall.DisplayTimeSlots();
+
+            Console.Write("\nPlease select a new time slot by ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int slotId))
+            {
+                Console.WriteLine("Invalid slot selection.");
+                return;
+            }
+
+            // Validate the selected time slot is in the last-minute window (1:30 PM - 2:15 PM)
+            // Assuming slot IDs 16-18 correspond to these times as in your original code
+            if (slotId < 16 || slotId > 18)
+            {
+                Console.WriteLine("Invalid last-minute slot selection. Only slots 16-18 are available for last-minute changes.");
+                return;
+            }
+
+            // Check if the slot is actually available
+            if (!stall.IsTimeSlotAvailable(slotId))
+            {
+                Console.WriteLine("This time slot is not available. Please choose another.");
+                return;
+            }
+
+            Console.WriteLine("\nLate Change Fee: $2");
+            Console.WriteLine("Would you like to proceed with this change? (Y/N)");
+            confirm = Console.ReadLine()?.Trim().ToUpper();
+
+            if (confirm == "Y")
+            {
+                if (stall.BookTimeSlot(slotId))
+                {
+                    // Get the time for display
+                    var slotTime = stall.GetTimeSlotTime(slotId);
+
+                    Console.WriteLine("\nTime slot successfully booked!");
+                    Console.WriteLine($"New pick up time: {slotTime.ToString("hh:mm tt")}");
+                    Console.WriteLine("$2 late change fee applied");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to book the time slot. Please try again.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Change cancelled. Returning to dashboard.");
             }
         }
     }
