@@ -20,6 +20,10 @@ namespace SWAD_assignment
         {
             SeedData();
             User loggedInUser = null;
+            Menu menu = new Menu();
+            menu.AddMenuItem(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+            menu.AddMenuItem(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+            menu.AddMenuItem(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
 
             while (true)
             {
@@ -32,7 +36,7 @@ namespace SWAD_assignment
                     switch (loggedInUser)
                     {
                         case Student student:
-                            ShowStudentMenu(student, ref loggedInUser);
+                            ShowStudentMenu(student, ref loggedInUser, menu);
                             break;
                         case FoodStallStaff staff:
                             ShowStaffMenu(staff, ref loggedInUser);
@@ -45,7 +49,23 @@ namespace SWAD_assignment
                 }
             }
         }
+        // Ensure stall has a menu and some starter items for viewing/updating
+        static void EnsureStallMenuSeeded(FoodStallStaff staff)
+        {
+            if (staff.Stall == null)
+                staff.Stall = new FoodStall { StallId = new Random().Next(100, 999), StallName = "New Stall" };
 
+            if (staff.Stall.Menu == null)
+                staff.Stall.Menu = new Menu();
+
+            var items = staff.Stall.Menu.MenuItems;
+            if (items.Count == 0)
+            {
+                items.Add(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
+                items.Add(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
+                items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
+            }
+        }
         static void SeedData()
         {
             // Admin
@@ -162,8 +182,8 @@ namespace SWAD_assignment
                         users.Add(new Student(userCounter++, name, email, password));
                     }
                     break;
-                 
-                   
+
+
                 case "2": // Staff
                     var staff = new FoodStallStaff(userCounter++, name, email, password);
                     staff.Stall = new FoodStall
@@ -184,7 +204,7 @@ namespace SWAD_assignment
             Console.WriteLine("Account created successfully!");
         }
 
-        static void ShowStudentMenu(Student student, ref User loggedInUser)
+        static void ShowStudentMenu(Student student, ref User loggedInUser, Menu menu)
         {
             // Show notifications first
             student.CheckNotifications();
@@ -200,22 +220,29 @@ namespace SWAD_assignment
                 Console.WriteLine("\n=== STUDENT MENU ===");
             }
 
-            Console.WriteLine("1. Send Feedback");
-            Console.WriteLine("2. View My Feedback");
-            Console.WriteLine("3. Logout");
-            Console.Write("Select option: ");
+            Console.WriteLine("1. Place Order");
+            Console.WriteLine("2. Send Feedback");
+            Console.WriteLine("3. View My Feedback");
+            Console.WriteLine("4. Logout");
 
             var staffMembers = users.OfType<FoodStallStaff>().ToList();
 
             switch (Console.ReadLine())
             {
                 case "1":
-                    student.SendFeedback(staffMembers);
+                    FoodStall selectedStall = staffMembers[0].Stall;
+
+                    Cart cart = new Cart(student);
+
+                    student.PlaceOrder(menu, selectedStall, cart);
                     break;
                 case "2":
-                    Console.WriteLine("Feature coming soon!");
+                    student.SendFeedback(staffMembers);
                     break;
                 case "3":
+                    Console.WriteLine("Feature coming soon!");
+                    break;
+                case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
@@ -231,7 +258,10 @@ namespace SWAD_assignment
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
             Console.WriteLine("1. View Feedback");
             Console.WriteLine("2. Report Feedback");
-            Console.WriteLine("3. Logout");
+            Console.WriteLine("3. View Incoming Orders");
+            Console.WriteLine("4. Update Menu");
+            Console.WriteLine("5. View Menu");
+            Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
             switch (Console.ReadLine())
@@ -284,6 +314,7 @@ namespace SWAD_assignment
                     Console.WriteLine($"ID: {order.OrderId}");
                     Console.WriteLine($"Customer: {order.OrderedBy.Name}");
                     Console.WriteLine("Items:");
+                    Console.Write("Select option: ");
                     foreach (var item in order.Items)
                     {
                         Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
@@ -299,6 +330,14 @@ namespace SWAD_assignment
 
 
                 case "4":
+                    EnsureStallMenuSeeded(staff);
+                    UpdateMenu.Show(staff);
+                    break;
+                case "5":
+                    EnsureStallMenuSeeded(staff);
+                    ViewMenu.Show(staff);
+                    break;
+                case "0":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
@@ -318,7 +357,7 @@ namespace SWAD_assignment
                 Console.WriteLine("3. Delete User");
                 Console.WriteLine("4. Suspend Student");
                 Console.WriteLine("5. Reinstate Student");
-                Console.WriteLine("6. Logout");
+                Console.WriteLine("0. Logout");
                 Console.Write("Select option: ");
 
                 switch (Console.ReadLine())
@@ -367,7 +406,7 @@ namespace SWAD_assignment
                         }
                         break;
 
-                    case "6": // Logout
+                    case "0": // Logout
                         loggedInUser = null;
                         Console.WriteLine("Logged out successfully.");
                         return;
@@ -395,7 +434,7 @@ namespace SWAD_assignment
                 Console.WriteLine("2. Suspend Student");
                 Console.WriteLine("3. Reinstate Student");
                 Console.WriteLine("4. Back to Menu");
-                Console.Write("Select action: ");
+                Console.Write("Select option: ");
 
                 switch (Console.ReadLine())
                 {
@@ -425,23 +464,6 @@ namespace SWAD_assignment
                         break;
                 }
             }
-                  // Ensure stall has a menu and some starter items for viewing/updating
-        static void EnsureStallMenuSeeded(FoodStallStaff staff)
-        {
-            if (staff.Stall == null)
-                staff.Stall = new FoodStall { StallId = new Random().Next(100, 999), StallName = "New Stall" };
-
-            if (staff.Stall.Menu == null)
-                staff.Stall.Menu = new Menu();
-
-            var items = staff.Stall.Menu.MenuItems;
-            if (items.Count == 0)
-            {
-                items.Add(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
-                items.Add(new MenuItem(2, "Mee Goreng", 4.00, "Fried noodles", 8));
-                items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
-            }
-        }
         }
     }
 }

@@ -25,6 +25,7 @@ namespace SWAD_assignment
                 DisplayReportDetails(report);
                 ProcessReportAction(report, users);
             }
+            Console.Write("Select report: ");
         }
 
         private void DisplayReportDetails(Report report)
@@ -40,6 +41,7 @@ namespace SWAD_assignment
         private void ProcessReportAction(Report report, List<User> users)
         {
             Console.Write("\nAction: (1) Approve, (2) Reject, (3) Skip: ");
+            Console.Write("Select option: ");
             if (!int.TryParse(Console.ReadLine(), out int action) || action < 1 || action > 3)
             {
                 Console.WriteLine("Invalid action. Skipping report.");
