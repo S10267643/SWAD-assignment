@@ -142,7 +142,7 @@ namespace SWAD_assignment
             Console.WriteLine("\n   FOOD STALL AVAILABLE TIME SLOTS   ");
             Console.WriteLine("══════════════════════════════════════");
             Console.WriteLine();
-
+            InitializeTimeSlots();
             int slotsPerRow = 4;
             int currentSlot = 0;
 
