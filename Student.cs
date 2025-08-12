@@ -7,6 +7,8 @@
         public int OrderLimit { get; set; }
         public int PickUpTimeSlot { get; set; }
 
+        public List<string> Notifications { get; set; } = new List<string>();
+
         public Student(int userId, string name, string email, string password)
              : base(userId, name, email, password)
         {
@@ -216,5 +218,19 @@
                 Console.WriteLine("Order cancelled.");
             }
         }
+
+        public void CheckNotifications()
+        {
+            if (Notifications.Count == 0) return;
+
+            Console.WriteLine("\n=== Notifications ===");
+            foreach (var notification in Notifications)
+            {
+                Console.WriteLine($"- {notification}");
+            }
+            Notifications.Clear();
+        }
     }
+
+
 }

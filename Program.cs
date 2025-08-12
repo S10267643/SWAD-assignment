@@ -199,6 +199,8 @@ namespace SWAD_assignment
 
         static void ShowStudentMenu(Student student, ref User loggedInUser, Menu menu)
         {
+            // Show notifications first
+            student.CheckNotifications();
             // Display priority status if applicable
             if (student is Priority priority)
             {
@@ -279,56 +281,45 @@ namespace SWAD_assignment
                         break;
                     }
 
-                    // Step 1: List all order IDs
-                    Console.WriteLine("\n=== Order IDs ===");
-                    foreach (var order in staff.Stall.Orders)
+                    // Display orders
+                    Console.WriteLine("\n=== Current Orders ===");
+                    foreach (var o in staff.Stall.Orders)
                     {
-                        Console.WriteLine($"Order ID: {order.OrderId}");
-                        Console.WriteLine($"Customer: {order.OrderedBy.Name}");
-                        if (order.OrderedBy is Priority)
-                        {
-                            Console.WriteLine("[PRIORITY ORDER]");
-                        }
-                        Console.WriteLine("-------------------");
+                        Console.WriteLine($"ID: {o.OrderId} | Customer: {o.OrderedBy.Name} | Total: {o.TotalPrice:C}");
                     }
 
-                    // Step 2: Select an order to view details
-                    Console.Write("\nEnter Order ID to view details (or 0 to cancel): ");
-                    if (!int.TryParse(Console.ReadLine(), out int selectedOrderId) || selectedOrderId == 0)
+                    Console.Write("\nEnter Order ID to manage (0 to cancel): ");
+                    if (!int.TryParse(Console.ReadLine(), out int orderId) || orderId == 0)
                     {
                         break;
                     }
 
-                    var orderToManage = staff.Stall.Orders.FirstOrDefault(o => o.OrderId == selectedOrderId);
-                    if (orderToManage == null)
+                    var order = staff.Stall.Orders.FirstOrDefault(o => o.OrderId == orderId);
+                    if (order == null)
                     {
                         Console.WriteLine("Order not found.");
                         break;
                     }
 
-                    // Display full order details
+                    // Show order details
                     Console.WriteLine("\n=== Order Details ===");
-                    Console.WriteLine($"Order ID: {orderToManage.OrderId}");
-                    Console.WriteLine($"Customer: {orderToManage.OrderedBy.Name}");
-                    Console.WriteLine($"QR Code: {orderToManage.QRCode}");
+                    Console.WriteLine($"ID: {order.OrderId}");
+                    Console.WriteLine($"Customer: {order.OrderedBy.Name}");
                     Console.WriteLine("Items:");
-                    foreach (var item in orderToManage.Items)
+                    foreach (var item in order.Items)
                     {
                         Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
                     }
-                    Console.WriteLine($"Total: {orderToManage.TotalPrice:C}");
+                    Console.WriteLine($"Total: {order.TotalPrice:C}");
 
-                    // Step 3: Prompt for cancellation
-                    Console.Write("\nWould you like to cancel this order? (Y/N): ");
-                    string cancelChoice = Console.ReadLine()?.Trim().ToUpper();
-
-                    if (cancelChoice == "Y")
+                    Console.Write("\nCancel this order? (Y/N): ");
+                    if (Console.ReadLine().Trim().ToUpper() == "Y")
                     {
-                        staff.Stall.CancelOrder(selectedOrderId);
+                        staff.Stall.CancelOrder(orderId);
                     }
                     break;
-            
-           
+
+
                 case "4":
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");

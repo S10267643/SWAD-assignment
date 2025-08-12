@@ -59,13 +59,59 @@ namespace SWAD_assignment
                 return;
             }
 
+            // Get cancellation reason
+            string reason = GetCancellationReason();
+            if (reason == null) return; // Cancellation aborted
+
+            // Restore stock
             foreach (var item in order.Items)
             {
                 item.Item.IncreaseStock(item.Quantity);
             }
 
+            // Notify student with reason
+            order.OrderedBy.Notifications.Add(
+                $"Your order #{orderId} from {StallName} has been cancelled. Reason: {reason}");
+
             Orders.Remove(order);
             Console.WriteLine($"Order #{orderId} has been cancelled.");
+        }
+
+        private string GetCancellationReason()
+        {
+            var reasons = new Dictionary<int, string>
+        {
+            {1, "Item out of stock"},
+            {2, "Stall closed unexpectedly"},
+            {3, "Payment issue"},
+            {4, "Other reason"}
+        };
+
+            Console.WriteLine("\nSelect cancellation reason:");
+            foreach (var reason in reasons)
+            {
+                Console.WriteLine($"{reason.Key}. {reason.Value}");
+            }
+
+            Console.Write("Enter reason number (or 0 to cancel): ");
+            if (!int.TryParse(Console.ReadLine(), out int choice) || choice == 0)
+            {
+                Console.WriteLine("Cancellation aborted.");
+                return null;
+            }
+
+            if (reasons.TryGetValue(choice, out string selectedReason))
+            {
+                if (choice == 4) // Other reason
+                {
+                    Console.Write("Enter specific reason: ");
+                    selectedReason = Console.ReadLine();
+                }
+                return selectedReason;
+            }
+
+            Console.WriteLine("Invalid reason selected. Using default reason.");
+            return "Unspecified reason";
         }
     }
 }
