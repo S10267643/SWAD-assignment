@@ -28,47 +28,34 @@ namespace SWAD_assignment
             ReceivedFeedback.Remove(feedback);
         }
 
-        public void ReportFeedback(List<Report> reports)
+        public void RespondToFeedback(int feedbackId, string response)
         {
-            if (ReceivedFeedback.Count == 0)
+            var feedback = ReceivedFeedback.FirstOrDefault(f => f.FeedbackId == feedbackId);
+            if (feedback != null && !feedback.HasResponse)
             {
-                Console.WriteLine("No feedback available to report.");
-                return;
-            }
+                feedback.Response = response;
+                feedback.ResponseDate = DateTime.Now;
 
-            Console.WriteLine("\nSelect feedback to report:");
-            for (int i = 0; i < ReceivedFeedback.Count; i++)
+                // Notify student
+                feedback.FromStudent.Notifications.Add(
+                    $"Your feedback to {Stall.StallName} has been responded to: \"{response}\"");
+            }
+        }
+
+        public void ReportFeedback(Feedback feedback, string reason, List<Report> reports)
+        {
+            if (feedback != null && !feedback.IsReported)
             {
-                var fb = ReceivedFeedback[i];
-                Console.WriteLine($"{i + 1}. [ID:{fb.FeedbackId}] {fb.Description} (from {fb.FromStudent.Name})");
+                feedback.IsReported = true;
+                var report = new Report(
+                    Program.GetNextReportId(),
+                    feedback.FeedbackId,
+                    StaffId,
+                    reason,
+                    feedback
+                );
+                reports.Add(report);
             }
-
-            if (!int.TryParse(Console.ReadLine(), out int fbChoice) || fbChoice < 1 || fbChoice > ReceivedFeedback.Count)
-            {
-                Console.WriteLine("Invalid feedback selection.");
-                return;
-            }
-
-            Console.Write("Enter reason for reporting this feedback: ");
-            string reason = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(reason))
-            {
-                Console.WriteLine("Reason cannot be empty.");
-                return;
-            }
-
-            var selectedFeedback = ReceivedFeedback[fbChoice - 1];
-            var report = new Report(
-                Program.GetNextReportId(),
-                selectedFeedback.FeedbackId,
-                StaffId,
-                reason,
-                selectedFeedback
-            );
-
-            reports.Add(report);
-            Console.WriteLine("Feedback reported successfully!");
         }
 
         public void ViewIncomingOrders()
@@ -103,6 +90,5 @@ namespace SWAD_assignment
                 Console.WriteLine("Cancellation cancelled.");
             }
         }
-
     }
 }

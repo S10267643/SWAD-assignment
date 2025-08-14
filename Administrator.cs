@@ -9,7 +9,7 @@ namespace SWAD_assignment
         public Administrator(int userId, string name, string email, string password)
             : base(userId, name, email, password) { }
 
-        public void HandleReports(List<Report> reports, List<User> users)
+        public void HandleReports(List<Report> reports, List<User> users, CTLFeedback feedbackController = null)
         {
             var pendingReports = reports.Where(r => r.Status == "Pending").ToList();
 
@@ -23,9 +23,8 @@ namespace SWAD_assignment
             foreach (var report in pendingReports)
             {
                 DisplayReportDetails(report);
-                ProcessReportAction(report, users);
+                ProcessReportAction(report, users, feedbackController);
             }
-            Console.Write("Select report: ");
         }
 
         private void DisplayReportDetails(Report report)
@@ -34,14 +33,26 @@ namespace SWAD_assignment
             Console.WriteLine($"Feedback ID: {report.FeedbackId}");
             Console.WriteLine($"Reported by Staff ID: {report.ReportedByStaffId}");
             Console.WriteLine($"Reason: {report.Reason}");
-            Console.WriteLine($"Feedback Content: {report.Feedback.Description}");
+            Console.WriteLine($"Date Reported: {report.DateReported:yyyy-MM-dd HH:mm}");
+            Console.WriteLine($"Feedback Content: \"{report.Feedback.Description}\"");
             Console.WriteLine($"From Student: {report.Feedback.FromStudent.Name}");
+
+            if (report.Feedback.FromStudent is Priority)
+            {
+                Console.WriteLine("Note: This feedback is from a PRIORITY student");
+            }
+
+            Console.WriteLine(new string('=', 50));
         }
 
-        private void ProcessReportAction(Report report, List<User> users)
+        private void ProcessReportAction(Report report, List<User> users, CTLFeedback feedbackController)
         {
-            Console.Write("\nAction: (1) Approve, (2) Reject, (3) Skip: ");
-            Console.Write("Select option: ");
+            Console.WriteLine("\nAction options:");
+            Console.WriteLine("1. Approve Report (Remove feedback)");
+            Console.WriteLine("2. Reject Report (Keep feedback)");
+            Console.WriteLine("3. Skip to next");
+            Console.Write("Select action (1-3): ");
+
             if (!int.TryParse(Console.ReadLine(), out int action) || action < 1 || action > 3)
             {
                 Console.WriteLine("Invalid action. Skipping report.");
@@ -51,11 +62,11 @@ namespace SWAD_assignment
             switch (action)
             {
                 case 1:
-                    ApproveReport(report, users);
+                    ApproveReport(report, users, feedbackController);
                     break;
                 case 2:
                     report.Reject();
-                    Console.WriteLine("Report rejected. Feedback remains.");
+                    Console.WriteLine("✗ Report rejected. Feedback remains.");
                     break;
                 case 3:
                     Console.WriteLine("Report skipped.");
@@ -63,7 +74,7 @@ namespace SWAD_assignment
             }
         }
 
-        private void ApproveReport(Report report, List<User> users)
+        private void ApproveReport(Report report, List<User> users, CTLFeedback feedbackController)
         {
             var staff = users.OfType<FoodStallStaff>()
                            .FirstOrDefault(s => s.StaffId == report.ReportedByStaffId);
@@ -74,10 +85,33 @@ namespace SWAD_assignment
                 return;
             }
 
-            staff.RemoveFeedback(report.Feedback);
+            // Always use feedbackController if available
+            if (feedbackController != null)
+            {
+                bool success = feedbackController.DeleteFeedback(report.Feedback.FeedbackId);
+                if (!success)
+                {
+                    Console.WriteLine("Failed to delete feedback. It may have already been removed.");
+                    return;
+                }
+            }
+            else
+            {
+                // Fallback to direct removal if controller isn't available
+                staff.RemoveFeedback(report.Feedback);
+            }
+
             report.Approve();
-            Console.WriteLine("Report approved. Feedback removed.");
+            Console.WriteLine("✓ Report approved. Feedback has been removed.");
+
+            // Notify the student whose feedback was removed
+            report.Feedback.FromStudent.Notifications.Add(
+                $"Your feedback to {staff.Stall?.StallName ?? "a food stall"} was removed by an administrator.");
         }
+
+
+
+
 
         public bool DeleteUser(int userId, List<User> users)
         {
