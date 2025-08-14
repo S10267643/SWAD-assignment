@@ -18,7 +18,7 @@
             OrderLimit = 3;          // Default order limit
             PickUpTimeSlot = 15;
         }
-        public void SendFeedback(List<FoodStallStaff> stalls)
+        public void SubmitFeedback(CTLFeedback feedbackController)
         {
             if (SuspensionStatus)
             {
@@ -26,17 +26,35 @@
                 return;
             }
 
-            Console.WriteLine("\nSelect a stall to send feedback to:");
-            for (int i = 0; i < stalls.Count; i++)
+            var staffMembers = feedbackController.GetAllStaff();
+            if (!staffMembers.Any())
             {
-                Console.WriteLine($"{i + 1}. {stalls[i].Stall.StallName}");
-            }
-
-            if (!int.TryParse(Console.ReadLine(), out int stallChoice) || stallChoice < 1 || stallChoice > stalls.Count)
-            {
-                Console.WriteLine("Invalid stall selection.");
+                Console.WriteLine("No food stalls available for feedback.");
                 return;
             }
+
+            Console.WriteLine("\n=== Submit Feedback ===");
+            Console.WriteLine("Select a food stall:");
+
+            for (int i = 0; i < staffMembers.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {staffMembers[i].Stall?.StallName ?? "Unknown Stall"}");
+            }
+
+            Console.Write($"Enter selection (1-{staffMembers.Count}, or 0 to cancel): ");
+            if (!int.TryParse(Console.ReadLine(), out int choice) || choice < 0 || choice > staffMembers.Count)
+            {
+                Console.WriteLine("Invalid selection.");
+                return;
+            }
+
+            if (choice == 0)
+            {
+                Console.WriteLine("Feedback submission cancelled.");
+                return;
+            }
+
+            var selectedStaff = staffMembers[choice - 1];
 
             Console.Write("Enter your feedback: ");
             string description = Console.ReadLine();
@@ -47,15 +65,8 @@
                 return;
             }
 
-            var feedback = new Feedback
-            {
-                FeedbackId = Program.GetNextFeedbackId(),
-                Description = description,
-                FromStudent = this
-            };
-
-            stalls[stallChoice - 1].ReceiveFeedback(feedback);
-            Console.WriteLine("Feedback sent successfully!");
+            bool success = feedbackController.SubmitFeedback(this.StudentId, selectedStaff.StaffId, description);
+            Console.WriteLine(success ? "Feedback submitted successfully!" : "Failed to submit feedback.");
         }
 
         public void PlaceOrder(Menu menu, FoodStall stall, Cart cart)

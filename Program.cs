@@ -217,6 +217,7 @@ namespace SWAD_assignment
             }
             else
             {
+                
                 Console.WriteLine("\n=== STUDENT MENU ===");
             }
 
@@ -224,9 +225,10 @@ namespace SWAD_assignment
             Console.WriteLine("2. Send Feedback");
             Console.WriteLine("3. View My Feedback");
             Console.WriteLine("4. Logout");
+            Console.Write("Select option: ");
 
             var staffMembers = users.OfType<FoodStallStaff>().ToList();
-
+            var feedbackController = new CTLFeedback(users);
             switch (Console.ReadLine())
             {
                 case "1":
@@ -236,9 +238,10 @@ namespace SWAD_assignment
 
                     student.PlaceOrder(menu, selectedStall, cart);
                     break;
-                case "2":
-                    student.SendFeedback(staffMembers);
+                case "2": // Send Feedback
+                    student.SubmitFeedback(feedbackController);
                     break;
+                 
                 case "3":
                     Console.WriteLine("Feature coming soon!");
                     break;
@@ -256,33 +259,27 @@ namespace SWAD_assignment
         {
             Console.WriteLine("\n=== Staff Menu ===");
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
-            Console.WriteLine("1. View Feedback");
-            Console.WriteLine("2. Report Feedback");
+            Console.WriteLine("1. View All Feedback");          
+            Console.WriteLine("2. Respond to Feedback");       
             Console.WriteLine("3. View Incoming Orders");
             Console.WriteLine("4. Update Menu");
             Console.WriteLine("5. View Menu");
             Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
+            var feedbackController = new CTLFeedback(users);
+            var feedbackUI = new UIFeedback(feedbackController);
+
             switch (Console.ReadLine())
             {
-                case "1":
-                    if (staff.ReceivedFeedback.Count == 0)
-                    {
-                        Console.WriteLine("No feedback received yet.");
-                        break;
-                    }
-                    Console.WriteLine("\nReceived Feedback:");
-                    foreach (var fb in staff.ReceivedFeedback)
-                    {
-                        string priorityTag = fb.FromStudent is Priority ? "[PRIORITY] " : "";
-                        Console.WriteLine($"- {priorityTag}{fb.Description} (from {fb.FromStudent.Name})");
-                    }
+                case "1": // View All Feedback
+                    feedbackUI.ViewAllFeedback(staff);
                     break;
-                case "2":
-                    staff.ReportFeedback(reports);
+
+                case "2": // Respond to Feedback
+                    feedbackUI.RespondToFeedback(staff, reports);
                     break;
-                case "3":
+                case "3": // View Incoming Orders
                     if (staff.Stall.Orders.Count == 0)
                     {
                         Console.WriteLine("No incoming orders at the moment.");
@@ -314,7 +311,6 @@ namespace SWAD_assignment
                     Console.WriteLine($"ID: {order.OrderId}");
                     Console.WriteLine($"Customer: {order.OrderedBy.Name}");
                     Console.WriteLine("Items:");
-                    Console.Write("Select option: ");
                     foreach (var item in order.Items)
                     {
                         Console.WriteLine($"- {item.Item.ItemName} x{item.Quantity} @ {item.Item.Price:C}");
@@ -328,19 +324,21 @@ namespace SWAD_assignment
                     }
                     break;
 
-
-                case "4":
+                case "4": // Update Menu
                     EnsureStallMenuSeeded(staff);
                     UpdateMenu.Show(staff);
                     break;
-                case "5":
+
+                case "5": // View Menu
                     EnsureStallMenuSeeded(staff);
                     ViewMenu.Show(staff);
                     break;
-                case "0":
+
+                case "0": // Logout
                     loggedInUser = null;
                     Console.WriteLine("Logged out successfully.");
                     break;
+
                 default:
                     Console.WriteLine("Invalid option.");
                     break;
