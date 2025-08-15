@@ -346,6 +346,8 @@ namespace SWAD_assignment
 
         static void ShowAdminMenu(Administrator admin, ref User loggedInUser)
         {
+            var adminUI = new UIAdministratorSystem(new CTLAdministratorSystem(admin, users));
+
             while (true)
             {
                 Console.WriteLine("\n=== ADMIN MENU ===");
@@ -354,83 +356,20 @@ namespace SWAD_assignment
                 Console.WriteLine("0. Logout");
                 Console.Write("Select option: ");
 
-                var adminsystemUI = new UIAdministratorSystem(admin);
-                var adminsystemCTL = new CTLAdministratorSystem(admin);
-
-                switch (Console.ReadLine())
-                {
-                    case "1": // Handle Reports
-                        admin.HandleReports(reports, users);
-                        break;
-
-                    case "2": // Manage Users
-                        admin.DisplayAllUsers(users);
-                        break;
-
-                    case "3": 
-                        break;
-
-                    case "4": 
-                        break;
-
-                    case "5":
-                        break;
-
-                    case "0": // Logout
-                        loggedInUser = null;
-                        Console.WriteLine("Logged out successfully.");
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid option.");
-                        break;
-                }
-            }
-
-
-            static void HandleUserManagement(Administrator admin)
-            {
-                Console.WriteLine("\n=== USER MANAGEMENT ===");
-                Console.WriteLine("All Users:");
-
-                foreach (var user in users)
-                {
-                    string status = "";
-                    if (user is Student s) status = s.SuspensionStatus ? " [SUSPENDED]" : " [ACTIVE]";
-                    Console.WriteLine($"{user.UserId}: {user.Name} ({user.Email}) - {user.GetType().Name}{status}");
-                }
-
-                Console.WriteLine("\n1. Delete User");
-                Console.WriteLine("2. Suspend Student");
-                Console.WriteLine("3. Reinstate Student");
-                Console.WriteLine("0. Back to Menu");
-                Console.Write("Select option: ");
-
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        Console.Write("Enter User ID to delete: ");
-                        if (int.TryParse(Console.ReadLine(), out int deleteId))
-                        {
-                            bool success = admin.DeleteUser(deleteId, users);
-                            Console.WriteLine(success ? "User deleted." : "Deletion failed.");
-                        }
+                        admin.HandleReports(reports, users);
                         break;
                     case "2":
-                        Console.Write("Enter Student ID to suspend: ");
-                        if (int.TryParse(Console.ReadLine(), out int suspendId))
-                        {
-                            bool success = admin.SuspendStudent(suspendId, users);
-                            Console.WriteLine(success ? "Student suspended." : "Suspension failed.");
-                        }
+                        adminUI.DisplayUserManagementMenu();
                         break;
-                    case "3":
-                        Console.Write("Enter Student ID to reinstate: ");
-                        if (int.TryParse(Console.ReadLine(), out int reinstateId))
-                        {
-                            bool success = admin.ReinstateStudent(reinstateId, users);
-                            Console.WriteLine(success ? "Student reinstated." : "Reinstatement failed.");
-                        }
+                    case "0":
+                        loggedInUser = null;
+                        Console.WriteLine("Logged out successfully.");
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option.");
                         break;
                 }
             }
