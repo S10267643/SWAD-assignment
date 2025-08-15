@@ -351,12 +351,12 @@ namespace SWAD_assignment
             {
                 Console.WriteLine("\n=== ADMIN MENU ===");
                 Console.WriteLine("1. Handle Reports");
-                Console.WriteLine("2. View All Users");
-                Console.WriteLine("3. Delete User");
-                Console.WriteLine("4. Suspend Student");
-                Console.WriteLine("5. Reinstate Student");
+                Console.WriteLine("2. Manage Users");
                 Console.WriteLine("0. Logout");
                 Console.Write("Select option: ");
+
+                var adminsystemUI = new UIAdministratorSystem(admin);
+                var adminsystemCTL = new CTLAdministratorSystem(admin);
 
                 switch (Console.ReadLine())
                 {
@@ -364,44 +364,17 @@ namespace SWAD_assignment
                         admin.HandleReports(reports, users);
                         break;
 
-                    case "2": // View All Users
+                    case "2": // Manage Users
                         admin.DisplayAllUsers(users);
                         break;
 
-                    case "3": // Delete User
-                        Console.Write("Enter User ID to delete: ");
-                        if (int.TryParse(Console.ReadLine(), out int deleteId))
-                        {
-                            admin.DeleteUser(deleteId, users);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid User ID.");
-                        }
+                    case "3": 
                         break;
 
-                    case "4": // Suspend Student
-                        Console.Write("Enter Student ID to suspend: ");
-                        if (int.TryParse(Console.ReadLine(), out int suspendId))
-                        {
-                            admin.SuspendStudent(suspendId, users);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid Student ID.");
-                        }
+                    case "4": 
                         break;
 
-                    case "5": // Reinstate Student
-                        Console.Write("Enter Student ID to reinstate: ");
-                        if (int.TryParse(Console.ReadLine(), out int reinstateId))
-                        {
-                            admin.ReinstateStudent(reinstateId, users);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid Student ID.");
-                        }
+                    case "5":
                         break;
 
                     case "0": // Logout
@@ -431,7 +404,7 @@ namespace SWAD_assignment
                 Console.WriteLine("\n1. Delete User");
                 Console.WriteLine("2. Suspend Student");
                 Console.WriteLine("3. Reinstate Student");
-                Console.WriteLine("4. Back to Menu");
+                Console.WriteLine("0. Back to Menu");
                 Console.Write("Select option: ");
 
                 switch (Console.ReadLine())
