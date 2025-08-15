@@ -233,10 +233,9 @@ namespace SWAD_assignment
             {
                 case "1":
                     FoodStall selectedStall = staffMembers[0].Stall;
-
-                    Cart cart = new Cart(student);
-
-                    student.PlaceOrder(menu, selectedStall, cart);
+                    var orderController = new CTLPlaceOrder(menu, student);
+                    var orderUI = new UIPlaceOrder(orderController);
+                    orderUI.StartOrderProcess(selectedStall);
                     break;
                 case "2": // Send Feedback
                     student.SubmitFeedback(feedbackController);

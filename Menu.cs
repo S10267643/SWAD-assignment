@@ -44,5 +44,7 @@ namespace SWAD_assignment
         {
             return MenuItems.Find(i => i.ItemId == itemId);
         }
+
+        public List<MenuItem> GetAllItems() => MenuItems;
     }
 }
