@@ -4,18 +4,14 @@ namespace SWAD_assignment
 {
     public class Priority : Student
     {
-
         public int PriorityOrderLimit { get; set; }
         public int PriorityPickUpTimeSlot { get; set; }
-
 
         public Priority(int userId, string name, string email, string password)
             : base(userId, name, email, password)
         {
-
             PriorityOrderLimit = 10;
             PriorityPickUpTimeSlot = 5;
-
 
             // Override base properties
             OrderLimit = PriorityOrderLimit;
@@ -110,7 +106,8 @@ namespace SWAD_assignment
                         if (cart.GetCartItems().Count == 0)
                         {
                             Console.WriteLine("Your cart is empty. Returning to item selection...");
-                            PlaceOrder(menu, stall, cart);
+                            // Re-enter the same flow without touching Student.cs
+                            PriorityPlaceOrder(menu, stall, cart);
                             return;
                         }
                         modifying = false;
@@ -142,10 +139,12 @@ namespace SWAD_assignment
                         int diff = existingItem.Quantity - newQty;
                         if (diff > 0)
                         {
+                            // quantity decreased => return stock
                             existingItem.Item.IncreaseStock(diff);
                         }
                         else if (diff < 0)
                         {
+                            // quantity increased => need more stock
                             int increaseAmount = -diff;
                             if (existingItem.Item.Quantity < increaseAmount)
                             {
@@ -161,7 +160,6 @@ namespace SWAD_assignment
 
                     cart.DisplayCart();
                 }
-
             }
 
             // Final confirmation
@@ -169,6 +167,7 @@ namespace SWAD_assignment
             string confirm = Console.ReadLine()?.Trim().ToUpper();
             if (confirm == "Y")
             {
+                // Priority users see priority slots
                 stall.DisplayTimeSlotsPriority();
                 Console.Write("Please select a time slot by ID: ");
                 if (!int.TryParse(Console.ReadLine(), out int slotId))
@@ -179,12 +178,14 @@ namespace SWAD_assignment
 
                 if (stall.BookTimeSlot(slotId))
                 {
+                    // Booked successfully: place the order once
                     Order.PlaceOrder(cart, stall, this);
                     OrderLimit--;
                 }
-                // Proceed with order: stock was already reduced, so just place order
-                Order.PlaceOrder(cart, stall, this);
-                OrderLimit--;
+                else
+                {
+                    Console.WriteLine("Failed to book the time slot. Please try again.");
+                }
             }
             else
             {
@@ -196,6 +197,7 @@ namespace SWAD_assignment
                 Console.WriteLine("Order cancelled.");
             }
         }
+
         public void LastMinuteSlot(FoodStall stall)
         {
             Console.WriteLine("\n⚠️  A last minute change will result in a $2 fee. Proceed? (Y/N)");
@@ -244,7 +246,7 @@ namespace SWAD_assignment
                     var slotTime = stall.GetTimeSlotTime(slotId);
 
                     Console.WriteLine("\nTime slot successfully booked!");
-                    Console.WriteLine($"New pick up time: {slotTime.ToString("hh:mm tt")}");
+                    Console.WriteLine($"New pick up time: {slotTime:hh:mm tt}");
                     Console.WriteLine("$2 late change fee applied");
                 }
                 else
@@ -257,9 +259,5 @@ namespace SWAD_assignment
                 Console.WriteLine("Change cancelled. Returning to dashboard.");
             }
         }
-
-
-
-
     }
 }

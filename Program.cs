@@ -1,5 +1,4 @@
-
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,6 +18,9 @@ namespace SWAD_assignment
         static void Main(string[] args)
         {
             SeedData();
+
+
+
             User loggedInUser = null;
             Menu menu = new Menu();
             menu.AddMenuItem(new MenuItem(1, "Nasi Lemak", 3.50, "Coconut rice with chicken", 10));
@@ -49,6 +51,7 @@ namespace SWAD_assignment
                 }
             }
         }
+
         // Ensure stall has a menu and some starter items for viewing/updating
         static void EnsureStallMenuSeeded(FoodStallStaff staff)
         {
@@ -66,6 +69,7 @@ namespace SWAD_assignment
                 items.Add(new MenuItem(3, "Teh Tarik", 1.50, "Milk tea", 15));
             }
         }
+
         static void SeedData()
         {
             // Admin
@@ -183,7 +187,6 @@ namespace SWAD_assignment
                     }
                     break;
 
-
                 case "2": // Staff
                     var staff = new FoodStallStaff(userCounter++, name, email, password);
                     staff.Stall = new FoodStall
@@ -208,16 +211,15 @@ namespace SWAD_assignment
         {
             // Show notifications first
             student.CheckNotifications();
+
             // Display priority status if applicable
             if (student is Priority priority)
             {
                 Console.WriteLine($"\n=== PRIORITY STUDENT MENU ({priority.Name}) ===");
                 Console.WriteLine($"Your benefits: Order Limit: {priority.OrderLimit}, Time Slot: {priority.PickUpTimeSlot}");
-
             }
             else
             {
-                
                 Console.WriteLine("\n=== STUDENT MENU ===");
             }
 
@@ -240,7 +242,7 @@ namespace SWAD_assignment
                 case "2": // Send Feedback
                     student.SubmitFeedback(feedbackController);
                     break;
-                 
+
                 case "3":
                     Console.WriteLine("Feature coming soon!");
                     break;
@@ -258,11 +260,10 @@ namespace SWAD_assignment
         {
             Console.WriteLine("\n=== Staff Menu ===");
             Console.WriteLine($"Managing: {staff.Stall.StallName}");
-            Console.WriteLine("1. View All Feedback");          
-            Console.WriteLine("2. Respond to Feedback");       
+            Console.WriteLine("1. View All Feedback");
+            Console.WriteLine("2. Respond to Feedback");
             Console.WriteLine("3. View Incoming Orders");
-            Console.WriteLine("4. Update Menu");
-            Console.WriteLine("5. View Menu");
+            Console.WriteLine("4. View Menu");
             Console.WriteLine("0. Logout");
             Console.Write("Select option: ");
 
@@ -278,6 +279,7 @@ namespace SWAD_assignment
                 case "2": // Respond to Feedback
                     feedbackUI.RespondToFeedback(staff, reports);
                     break;
+
                 case "3": // View Incoming Orders
                     if (staff.Stall.Orders.Count == 0)
                     {
@@ -323,14 +325,10 @@ namespace SWAD_assignment
                     }
                     break;
 
-                case "4": // Update Menu
-                    EnsureStallMenuSeeded(staff);
-                    UpdateMenu.Show(staff);
-                    break;
 
-                case "5": // View Menu
+                case "4": // View Menu
                     EnsureStallMenuSeeded(staff);
-                    ViewMenu.Show(staff);
+                    ViewMenu.Show(staff);    // Provided by UIViewMenu.cs (static wrapper)
                     break;
 
                 case "0": // Logout
@@ -376,4 +374,3 @@ namespace SWAD_assignment
         }
     }
 }
-
