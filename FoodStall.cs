@@ -122,16 +122,15 @@ namespace SWAD_assignment
         private void InitializeTimeSlots()
         {
             _timeSlots = new Dictionary<int, (DateTime, bool)>();
-            DateTime startTime = DateTime.Today.AddHours(10); // 10:00 AM
-            DateTime endTime = DateTime.Today.AddHours(18);   // 6:00 PM
+            DateTime startTime = DateTime.Today.AddHours(10);
+            DateTime endTime = DateTime.Today.AddHours(18);
             int slotId = 1;
+            DateTime now = DateTime.Now;
 
             while (startTime < endTime)
             {
-                // Randomly mark some slots as unavailable (about 20% chance)
-                bool isAvailable = _random.Next(0, 5) > 0; // 80% chance of being available
+                bool isAvailable = startTime >= now.AddMinutes(30) && _random.Next(0, 5) > 0;
                 _timeSlots.Add(slotId, (startTime, isAvailable));
-
                 startTime = startTime.AddMinutes(15);
                 slotId++;
             }
@@ -141,19 +140,30 @@ namespace SWAD_assignment
         {
             Console.WriteLine("\n   FOOD STALL AVAILABLE TIME SLOTS   ");
             Console.WriteLine("══════════════════════════════════════");
+            Console.WriteLine($"Current time: {DateTime.Now.ToString("hh:mm tt")}");
+            Console.WriteLine($"Earliest available pickup: {DateTime.Now.AddMinutes(30).ToString("hh:mm tt")}");
             Console.WriteLine();
-            InitializeTimeSlots();
+
             int slotsPerRow = 4;
             int currentSlot = 0;
+            DateTime minimumTime = DateTime.Now.AddMinutes(30);
 
             foreach (var slot in _timeSlots)
             {
-                string displayText = $"{slot.Key}. {slot.Value.Time.ToString("hh:mm tt")}";
+                string displayText;
+                bool isAvailable = slot.Value.IsAvailable && slot.Value.Time >= minimumTime;
 
-                // Mark unavailable slots
-                if (!slot.Value.IsAvailable)
+                if (slot.Value.Time < minimumTime)
+                {
+                    displayText = $"{slot.Key}. [TOO SOON]";
+                }
+                else if (!isAvailable)
                 {
                     displayText = $"{slot.Key}. [UNAVAILABLE]";
+                }
+                else
+                {
+                    displayText = $"{slot.Key}. {slot.Value.Time.ToString("hh:mm tt")}";
                 }
 
                 Console.Write(displayText.PadRight(25));
@@ -167,22 +177,6 @@ namespace SWAD_assignment
             }
 
             Console.WriteLine("\n══════════════════════════════════════");
-            Console.WriteLine($"Total available slots: {_timeSlots.Count(s => s.Value.IsAvailable)}\n");
-        }
-
-        public void DisplayTimeSlotsPriority()
-        {
-            Console.WriteLine("\n   PRIORITY TIME SLOTS   ");
-            Console.WriteLine("════════════════════════════");
-            Console.WriteLine();
-
-            // Priority students see all slots as available
-            foreach (var slot in _timeSlots)
-            {
-                Console.WriteLine($"{slot.Key}. {slot.Value.Time.ToString("hh:mm tt")} (Priority)");
-            }
-
-            Console.WriteLine("\n════════════════════════════");
         }
 
         public bool BookTimeSlot(int slotId, bool isPriority = false)
@@ -194,21 +188,151 @@ namespace SWAD_assignment
             }
 
             var slot = _timeSlots[slotId];
+            DateTime minimumTime = DateTime.Now.AddMinutes(30);
 
-            if (!isPriority && !slot.IsAvailable)
+            if (!isPriority)
+            {
+                if (slot.Time < minimumTime)
+                {
+                    Console.WriteLine("This time slot is too soon. Please choose a slot at least 30 minutes from now.");
+                    return false;
+                }
+
+                if (!slot.IsAvailable)
+                {
+                    Console.WriteLine("This time slot is not available.");
+                    return false;
+                }
+            }
+
+            Console.Write($"Do you confirm that you want time slot {slotId}? (Y/N): ");
+            if (Console.ReadLine()?.Trim().ToUpper() != "Y")
+            {
+                Console.WriteLine("Booking cancelled.");
+                return false;
+            }
+
+            // Mark slot as unavailable after booking
+            _timeSlots[slotId] = (slot.Time, false);
+            string qrCode = $"QR-{DateTime.Now.Ticks.ToString().Substring(10)}";
+
+            Console.WriteLine("\nTime slot successfully booked!");
+            Console.WriteLine($"QR Code: {qrCode}");
+            Console.WriteLine($"Pickup time: {slot.Time.ToString("hh:mm tt")}");
+
+            return true;
+        }
+
+        public bool ChangeTimeSlot(int currentSlotId)
+        {
+            Console.WriteLine("\nChanging your time slot will incur a $2 fee. Continue? (Y/N)");
+            if (Console.ReadLine()?.Trim().ToUpper() != "Y")
+            {
+                Console.WriteLine("Time slot change cancelled.");
+                return false;
+            }
+
+            DisplayTimeSlots();
+            Console.Write("\nEnter new time slot ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int newSlotId) || !_timeSlots.ContainsKey(newSlotId))
+            {
+                Console.WriteLine("Invalid slot ID.");
+                return false;
+            }
+
+            var newSlot = _timeSlots[newSlotId];
+            if (!newSlot.IsAvailable)
             {
                 Console.WriteLine("This time slot is not available.");
                 return false;
             }
 
-            // Mark as booked (unavailable for others)
-            if (!isPriority)
+            Console.Write($"Do you confirm that you want time slot {newSlotId}? You will be charged $2. (Y/N): ");
+            if (Console.ReadLine()?.Trim().ToUpper() != "Y")
             {
-                _timeSlots[slotId] = (slot.Time, false);
+                Console.WriteLine("Time slot change cancelled.");
+                return false;
             }
 
-            Console.WriteLine($"Time slot booked: {slot.Time.ToString("hh:mm tt")}");
+            // Release old slot and book new one
+            _timeSlots[currentSlotId] = (_timeSlots[currentSlotId].Time, true);
+            _timeSlots[newSlotId] = (newSlot.Time, false);
+
+            string newQrCode = $"QR-{DateTime.Now.Ticks.ToString().Substring(10)}";
+
+            Console.WriteLine("\nTime slot successfully changed!");
+            Console.WriteLine($"New QR Code: {newQrCode}");
+            Console.WriteLine($"New pickup time: {newSlot.Time.ToString("hh:mm tt")}");
+            Console.WriteLine("$2 late change fee applied");
+
             return true;
+        }
+
+        // Helper method to suggest alternative slots
+        private void SuggestAlternativeSlots(int originalSlotId)
+        {
+            Console.WriteLine("\nSuggested alternative slots:");
+            int suggestions = 0;
+            DateTime minimumTime = DateTime.Now.AddMinutes(30);
+
+            foreach (var slot in _timeSlots)
+            {
+                if (slot.Key != originalSlotId &&
+                    slot.Value.IsAvailable &&
+                    slot.Value.Time >= minimumTime &&
+                    suggestions < 3)
+                {
+                    Console.WriteLine($"{slot.Key}. {slot.Value.Time.ToString("hh:mm tt")}");
+                    suggestions++;
+                }
+            }
+
+            if (suggestions == 0)
+            {
+                Console.WriteLine("No alternative slots available. Please try again later.");
+            }
+        }
+        public void DisplayTimeSlotsPriority()
+        {
+            Console.WriteLine("\n   FOOD STALL AVAILABLE TIME SLOTS   ");
+            Console.WriteLine("══════════════════════════════════════");
+            Console.WriteLine($"Current time: {DateTime.Now.ToString("hh:mm tt")}");
+            Console.WriteLine($"Earliest available pickup: {DateTime.Now.AddMinutes(30).ToString("hh:mm tt")}");
+            Console.WriteLine();
+
+            int slotsPerRow = 4;
+            int currentSlot = 0;
+            DateTime minimumTime = DateTime.Now.AddMinutes(30);
+
+            foreach (var slot in _timeSlots)
+            {
+                string displayText;
+                bool isAvailable = slot.Value.IsAvailable && slot.Value.Time >= minimumTime;
+
+                if (slot.Value.Time < minimumTime)
+                {
+                    displayText = $"{slot.Key}. [TOO SOON]";
+                }
+                else if (!isAvailable)
+                {
+                    displayText = $"{slot.Key}. [UNAVAILABLE]";
+                }
+                else
+                {
+                    displayText = $"{slot.Key}. {slot.Value.Time.ToString("hh:mm tt")}";
+                }
+
+                Console.Write(displayText.PadRight(25));
+
+                currentSlot++;
+                if (currentSlot % slotsPerRow == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine();
+                }
+            }
+
+            Console.WriteLine("\n══════════════════════════════════════");
         }
         public bool IsTimeSlotAvailable(int slotId)
         {
